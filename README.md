@@ -8,4 +8,11 @@ $ vsce publish
 # <publisher id>.myExtension published to VS Code Marketplace
 ```
 
-## Test change commit name
+# TODO
+
+-   display current author name <author email> in the status bar
+-   change author name and patch at local level (.git/config)
+-   insert new author name
+-   personalize info to display via property (only name, only email, both)
+-   refactor
+-   publish
