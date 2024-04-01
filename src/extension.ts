@@ -1,9 +1,9 @@
-import { homedir } from "os";
-import { Config, promise as parseGitConfig } from "parse-git-config";
+import { simpleGit } from "simple-git";
+
 import * as vscode from "vscode";
 
-const gitAuthorDetails: Record<string, string> = {};
 const GIT_AUTHOR_DETAILS = "gitAuthorDetails";
+let sbItem: vscode.StatusBarItem;
 
 /**
  * init code execution
@@ -11,48 +11,41 @@ const GIT_AUTHOR_DETAILS = "gitAuthorDetails";
  */
 async function init(context: vscode.ExtensionContext) {
     try {
-        let tmp = vscode.workspace?.workspaceFolders;
-        let workspacePath = "";
-        if (Array.isArray(tmp) && tmp.length >= 0) {
-            workspacePath = tmp[0].uri.path;
-        }
-        console.log(workspacePath);
-        const gitconfigs = await Promise.allSettled([
-            parseGitConfig({ cwd: homedir(), path: ".gitconfig" }), // home user settings
-            parseGitConfig({ cwd: workspacePath, path: ".git/config" }) // workspace sttings
-        ]);
+        const update: Record<string, string> = {};
+        const listConfig = await simpleGit().listConfig();
 
-        const x = gitconfigs
-            .filter((x) => x.status === "fulfilled")
-            .map((y) => {
-                const cur = (<Config>y).value;
-                if (cur && cur.user) {
-                    gitAuthorDetails[cur.user.email] =
-                        cur.user.name ?? "inherit from parent";
-                    return cur.user;
-                }
-                return {};
-            });
+        const current = listConfig.all;
+        const name = (current["user.name"] as string) ?? "N/A";
+        const email = (current["user.email"] as string) ?? "N/A";
+        update[email] = name;
+
+        const allFiles = Object.keys(listConfig.values); // all files
+        for (const f of allFiles) {
+            const conf = listConfig.values[f];
+            const name = conf["user.name"] as string | undefined;
+            const email = conf["user.email"] as string | undefined;
+            if (name && email) {
+                update[email] = name;
+            }
+        }
 
         // update some property to global state
-        await context.globalState.update(GIT_AUTHOR_DETAILS, gitAuthorDetails);
+        await context.globalState.update(GIT_AUTHOR_DETAILS, update);
 
-        const user = { ...x[0], ...x[1] };
-        vscode.window.showInformationMessage(
-            `Git user ${user.email} ${user.name}`
-        );
+        // vscode.window.showInformationMessage(`Git user ${email} ${name}`);
 
-        const sbItem = vscode.window.createStatusBarItem(
+        sbItem = vscode.window.createStatusBarItem(
             vscode.StatusBarAlignment.Left,
             1
         );
-        sbItem.text = user.email;
-        sbItem.tooltip = `${user.name} <${user.email}>`;
+        sbItem.text = email;
+        sbItem.tooltip = `${name} <${email}>`;
         // sbItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
         sbItem.command = "git-whoami.change-author"; // on click on tooltip change author
         sbItem.show();
     } catch (error) {
-        console.log("file does not exists");
+        console.error(error);
+        // TODO: manage error
     }
 }
 
@@ -89,8 +82,16 @@ export async function activate(context: vscode.ExtensionContext) {
                     // )
                 }
             });
-            vscode.window.showInformationMessage(`Got: ${result}`);
-            // TODO: on select update workspace configuration
+            if (!result) {
+                return;
+            }
+            // vscode.window.showInformationMessage(`Got: ${result}`);
+            const name = result.split("<")[0].trim();
+            const email = result.split(">")[0].split("<")[1].trim();
+            sbItem.text = result.split(">")[0].split("<")[1];
+            // TODO ..
+            await simpleGit().addConfig("user.email", email, false, "local");
+            await simpleGit().addConfig("user.name", name, false, "local");
         }
     );
 
