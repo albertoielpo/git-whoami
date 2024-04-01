@@ -30,7 +30,13 @@ async function init(context: vscode.ExtensionContext) {
         }
 
         // update some property to global state
-        await context.globalState.update(GIT_AUTHOR_DETAILS, update);
+        const gad: Record<string, string> | undefined =
+            await context.globalState.get(GIT_AUTHOR_DETAILS);
+
+        await context.globalState.update(GIT_AUTHOR_DETAILS, {
+            ...gad,
+            ...update
+        });
 
         // vscode.window.showInformationMessage(`Git user ${email} ${name}`);
 
@@ -86,10 +92,13 @@ export async function activate(context: vscode.ExtensionContext) {
                 return;
             }
             // vscode.window.showInformationMessage(`Got: ${result}`);
+            // TODO ..
             const name = result.split("<")[0].trim();
             const email = result.split(">")[0].split("<")[1].trim();
-            sbItem.text = result.split(">")[0].split("<")[1];
-            // TODO ..
+            sbItem.text = email;
+            sbItem.tooltip = `${name} <${email}>`;
+
+            // patch on local
             await simpleGit().addConfig("user.email", email, false, "local");
             await simpleGit().addConfig("user.name", name, false, "local");
         }
