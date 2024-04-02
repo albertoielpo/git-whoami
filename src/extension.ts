@@ -1,6 +1,7 @@
-import * as vscode from "vscode";
-import AuthorStatusBar from "./author-status-bar";
-import { COMMAND_CHANGE_AUTHOR, GLOBAL_STATE_AUTHOR_DETAILS } from "./const";
+import { ExtensionContext, commands } from "vscode";
+import { COMMAND_CHANGE_AUTHOR } from "./const";
+import AuthorStatusBar from "./context/author-status-bar";
+import GlobalState from "./context/global-state";
 import GitUtils from "./git-utils";
 
 /**
@@ -9,21 +10,14 @@ import GitUtils from "./git-utils";
  * @param authorStatusBar
  */
 async function onExtensionLoad(
-    context: vscode.ExtensionContext,
-    authorStatusBar: AuthorStatusBar
+    authorStatusBar: AuthorStatusBar,
+    globalState: GlobalState
 ) {
     try {
         const { name, email } = await GitUtils.getCurrentAuthor();
         const currentConfig = await GitUtils.getAllAvailableAuthors();
 
-        // update some property to global state
-        const savedConfig: Record<string, string> | undefined =
-            await context.globalState.get(GLOBAL_STATE_AUTHOR_DETAILS);
-
-        await context.globalState.update(GLOBAL_STATE_AUTHOR_DETAILS, {
-            ...(savedConfig ?? {}),
-            ...currentConfig
-        });
+        await globalState.updateAuthorDetails(currentConfig);
 
         authorStatusBar.set({ name, email });
     } catch (error) {
@@ -35,18 +29,18 @@ async function onExtensionLoad(
  * On extension activation
  * @param context
  */
-export async function activate(context: vscode.ExtensionContext) {
+export async function activate(context: ExtensionContext) {
     const authorStatusBar = new AuthorStatusBar(context);
+    const globalState = new GlobalState(context);
 
     // register command "change author"
-    const changeAuthor = vscode.commands.registerCommand(
-        COMMAND_CHANGE_AUTHOR,
-        () => authorStatusBar.onClick()
+    const changeAuthor = commands.registerCommand(COMMAND_CHANGE_AUTHOR, () =>
+        authorStatusBar.onClick(globalState)
     );
 
     context.subscriptions.push(changeAuthor);
 
-    onExtensionLoad(context, authorStatusBar);
+    onExtensionLoad(authorStatusBar, globalState);
 }
 
 export function deactivate() {}
