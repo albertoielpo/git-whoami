@@ -2,6 +2,10 @@
 
 All notable changes to the "git-whoami" extension will be documented in this file.
 
+## [1.0.1]
+
+-   Logo
+
 ## [1.0.0]
 
 -   Initial release
