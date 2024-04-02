@@ -1,14 +1,14 @@
 {
     "name": "git-whoami",
-    "displayName": "git-whoami",
-    "description": "display git whoami info",
+    "displayName": "Git Whoami",
+    "description": "Display git whoami info",
     "publisher": "albertoielpo",
     "author": {
         "email": "alberto.ielpo@gmail.com",
         "name": "Alberto Ielpo",
         "url": "https://ielpo.net"
     },
-    "version": "1.0.0",
+    "version": "1.0.1",
     "engines": {
         "vscode": "^1.87.0"
     },
@@ -23,6 +23,7 @@
     "repository": {
         "url": "https://github.com/albertoielpo/git-whoami.git"
     },
+    "icon": "images/logo.png",
     "contributes": {
         "commands": [
             {
