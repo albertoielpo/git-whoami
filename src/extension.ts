@@ -1,8 +1,9 @@
-import { ExtensionContext, commands } from "vscode";
-import { COMMAND_CHANGE_AUTHOR } from "./const";
-import AuthorStatusBar from "./context/author-status-bar";
-import GlobalState from "./context/global-state";
-import GitUtils from "./git-utils";
+import { lstat } from "node:fs/promises";
+import { ExtensionContext, commands, workspace } from "vscode";
+import { COMMAND_CHANGE_AUTHOR, COMMAND_CLEAN_AUTHORS } from "./const";
+import AuthorStatusBar from "./context/author-status-bar.context";
+import GlobalState from "./context/global-state.context";
+import GitHelper from "./helper/git.helper";
 
 /**
  *
@@ -11,17 +12,31 @@ import GitUtils from "./git-utils";
  */
 async function onExtensionLoad(
     authorStatusBar: AuthorStatusBar,
-    globalState: GlobalState
+    globalState: GlobalState,
+    gitHelper: GitHelper
 ) {
     try {
-        const { name, email } = await GitUtils.getCurrentAuthor();
-        const currentConfig = await GitUtils.getAllAvailableAuthors();
-
+        const author = await gitHelper.getCurrentAuthor();
+        const currentConfig = await gitHelper.getAllAvailableAuthors();
         await globalState.updateAuthorDetails(currentConfig);
-
-        authorStatusBar.set({ name, email });
+        authorStatusBar.set(author);
     } catch (error) {
         console.error(error);
+    }
+}
+
+async function isGitProject(): Promise<string | undefined> {
+    try {
+        if (workspace.workspaceFolders?.length) {
+            const workspacePath = workspace.workspaceFolders[0].uri.fsPath;
+            const isGitProject = await lstat(`${workspacePath}/.git`);
+            if (!isGitProject.isDirectory()) {
+                return;
+            }
+            return workspacePath;
+        }
+    } catch (error) {
+        return;
     }
 }
 
@@ -30,7 +45,21 @@ async function onExtensionLoad(
  * @param context
  */
 export async function activate(context: ExtensionContext) {
-    const authorStatusBar = new AuthorStatusBar(context);
+    const workspacePath = await isGitProject();
+    if (!workspacePath) {
+        console.error("This is not a git project");
+        return;
+    }
+
+    const gitHelper = new GitHelper({
+        baseDir: workspacePath,
+        binary: "git"
+    });
+
+    const config = workspace.getConfiguration("git-whoami");
+    const statusbarDisplay = config.statusbar?.display ?? "full";
+
+    const authorStatusBar = new AuthorStatusBar(gitHelper, statusbarDisplay);
     const globalState = new GlobalState(context);
 
     // register command "change author"
@@ -38,9 +67,15 @@ export async function activate(context: ExtensionContext) {
         authorStatusBar.onClick(globalState)
     );
 
+    // register command "set default author"
     context.subscriptions.push(changeAuthor);
 
-    onExtensionLoad(authorStatusBar, globalState);
+    const cleanAuthors = commands.registerCommand(COMMAND_CLEAN_AUTHORS, () =>
+        authorStatusBar.cleanAuthors(globalState)
+    );
+    context.subscriptions.push(cleanAuthors);
+
+    onExtensionLoad(authorStatusBar, globalState, gitHelper);
 }
 
 export function deactivate() {}

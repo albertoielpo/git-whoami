@@ -1,24 +1,27 @@
-import { GitConfigScope, simpleGit } from "simple-git";
+import { GitConfigScope, SimpleGitOptions, simpleGit } from "simple-git";
 
 export type CommitAuthor = {
     name?: string;
     email?: string;
 };
 
-export default class GitUtils {
-    public static async getCurrentAuthor(): Promise<CommitAuthor> {
-        const listConfig = await simpleGit().listConfig();
+export default class GitHelper {
+    private readonly sg;
+    constructor(options: Partial<SimpleGitOptions>) {
+        this.sg = simpleGit(options);
+    }
+
+    public async getCurrentAuthor(): Promise<CommitAuthor> {
+        const listConfig = await this.sg.listConfig();
         const current = listConfig.all;
         const name = (current["user.name"] as string) ?? "N/A";
         const email = (current["user.email"] as string) ?? "N/A";
         return { name, email };
     }
 
-    public static async getAllAvailableAuthors(): Promise<
-        Record<string, string>
-    > {
+    public async getAllAvailableAuthors(): Promise<Record<string, string>> {
         const commitAuthors: Record<string, string> = {};
-        const listConfig = await simpleGit().listConfig();
+        const listConfig = await this.sg.listConfig();
         const allFiles = Object.keys(listConfig.values); // all files
         for (const f of allFiles) {
             const conf = listConfig.values[f];
@@ -31,20 +34,20 @@ export default class GitUtils {
         return commitAuthors;
     }
 
-    public static async save(data: CommitAuthor, scope?: GitConfigScope) {
+    public async save(data: CommitAuthor, scope?: GitConfigScope) {
         if (!data) {
             return;
         }
         if (data.email) {
-            await simpleGit().addConfig(
+            await this.sg.addConfig(
                 "user.email",
                 data.email,
                 false,
-                "local"
+                scope ?? "local"
             );
         }
         if (data.name) {
-            await simpleGit().addConfig(
+            await this.sg.addConfig(
                 "user.name",
                 data.name,
                 false,

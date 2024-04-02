@@ -1,7 +1,7 @@
 {
     "name": "git-whoami",
     "displayName": "git-whoami",
-    "description": "display gitconfig info",
+    "description": "display git whoami info",
     "author": {
         "email": "alberto.ielpo@gmail.com",
         "name": "Alberto Ielpo",
@@ -25,14 +25,24 @@
     "contributes": {
         "commands": [
             {
-                "command": "git-whoami.show-current-author",
-                "title": "Show current author details"
-            },
-            {
                 "command": "git-whoami.change-author",
                 "title": "Change author"
+            },
+            {
+                "command": "git-whoami.clean-authors",
+                "title": "Clean authors except current"
             }
-        ]
+        ],
+        "configuration": {
+            "title": "configuration title",
+            "properties": {
+                "statusbar.display": {
+                    "type":  ["full" , "email" , "name" , "domain"],
+                    "default": "full",
+                    "description": "scope name description"
+                }
+            }
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
@@ -45,7 +55,6 @@
     "devDependencies": {
         "@types/mocha": "^10.0.6",
         "@types/node": "18.x",
-        "@types/parse-git-config": "^3.0.4",
         "@types/vscode": "^1.87.0",
         "@typescript-eslint/eslint-plugin": "^7.4.0",
         "@typescript-eslint/parser": "^7.4.0",
@@ -55,7 +64,6 @@
         "typescript": "^5.3.3"
     },
     "dependencies": {
-        "parse-git-config": "^3.0.0",
         "simple-git": "^3.24.0"
     }
 }

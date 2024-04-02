@@ -12,11 +12,15 @@ export default class GlobalState {
         return this.context.globalState.get(GLOBAL_STATE_AUTHOR_DETAILS);
     }
 
-    async updateAuthorDetails(data: object): Promise<unknown> {
+    async updateAuthorDetails(data: Record<string, string>): Promise<unknown> {
         const savedConfig = await this.getAuthorDetails();
         return this.context.globalState.update(GLOBAL_STATE_AUTHOR_DETAILS, {
             ...(savedConfig ?? {}),
             ...data
         });
+    }
+
+    async resetAuthorDetails(): Promise<unknown> {
+        return this.context.globalState.update(GLOBAL_STATE_AUTHOR_DETAILS, {});
     }
 }

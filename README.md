@@ -11,6 +11,23 @@ Underline are used git user.name and git user.email property
 -   insert new author name
 -   personalize info to display via property (only name, only email, both)
 
+## How to use
+
+-   Click on the status bar on the author name and select/add the author name
+-   CTRL+MAIUSC+P + "change author" and select/add the author name
+-   CTRL+MAIUSC+P + "clean authors except current" to delete cache layer
+
 ## Configuration
 
-TODO
+```
+{
+    git-whoami.statusbar.display: "full" | "email" | "name" | "domain"
+}
+```
+
+### Example
+
+-   full: name <email-name@domain>
+-   email: email-name@domain
+-   name: name
+-   domain: domain
