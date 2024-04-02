@@ -2,6 +2,7 @@
     "name": "git-whoami",
     "displayName": "git-whoami",
     "description": "display git whoami info",
+    "publisher": "albertoielpo",
     "author": {
         "email": "alberto.ielpo@gmail.com",
         "name": "Alberto Ielpo",
@@ -34,10 +35,15 @@
             }
         ],
         "configuration": {
-            "title": "configuration title",
+            "title": "git whoami properties",
             "properties": {
                 "statusbar.display": {
-                    "type":  ["full" , "email" , "name" , "domain"],
+                    "type": [
+                        "full",
+                        "email",
+                        "name",
+                        "domain"
+                    ],
                     "default": "full",
                     "description": "scope name description"
                 }
