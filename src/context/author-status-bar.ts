@@ -32,7 +32,6 @@ export default class AuthorStatusBar {
         }
         this.statusBar.text = `${data.name} <${data.email}>`;
         this.statusBar.tooltip = `${data.name} <${data.email}>`;
-        // sbItem.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
         this.statusBar.command = COMMAND_CHANGE_AUTHOR; // on click on tooltip change author
         this.statusBar.show();
     }
