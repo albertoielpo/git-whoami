@@ -8,7 +8,7 @@
         "name": "Alberto Ielpo",
         "url": "https://ielpo.net"
     },
-    "version": "1.0.1",
+    "version": "1.0.2",
     "engines": {
         "vscode": "^1.87.0"
     },
@@ -28,25 +28,26 @@
         "commands": [
             {
                 "command": "git-whoami.change-author",
-                "title": "Change author"
+                "title": "Git Whoami: Change author"
             },
             {
                 "command": "git-whoami.clean-authors",
-                "title": "Clean authors except current"
+                "title": "Git Whoami: Clean authors except current"
             }
         ],
         "configuration": {
-            "title": "git whoami properties",
+            "title": "Git Whoami",
             "properties": {
-                "statusbar.display": {
-                    "type": [
+                "git-whoami.statusbar.display": {
+                    "type": "string",
+                    "enum": [
                         "full",
                         "email",
                         "name",
                         "domain"
                     ],
                     "default": "full",
-                    "description": "scope name description"
+                    "description": "status bar display mode"
                 }
             }
         }

@@ -16,5 +16,5 @@
         "source.organizeImports": "explicit"
     },
     "typescript.preferences.importModuleSpecifier": "relative",
-    "git-whoami.statusbar.display": "full"
+    "git-whoami.statusbar.display": "email"
 }

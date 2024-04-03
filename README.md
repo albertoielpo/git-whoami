@@ -14,20 +14,18 @@ Underline are used git user.name and git user.email properties
 ## How to use
 
 -   Click on the status bar on the author name and select/add the author name
--   CTRL+MAIUSC+P + "change author" and select/add the author name
--   CTRL+MAIUSC+P + "clean authors except current" to delete cache layer
+-   CTRL+MAIUSC+P + "Git Whoami: change author" and select/add the author name
+-   CTRL+MAIUSC+P + "Git Whoami: clean authors except current" to delete cache layer
 
 ## Configuration
 
-```
-{
-    git-whoami.statusbar.display: "full" | "email" | "name" | "domain"
-}
-```
+Git Whoami status bar display can be:
+
+-   full (author name \<author email\>)
+-   email (author email)
+-   name (author name)
+-   domain (author email domain only)
 
 ### Example
 
--   full: name <email-name@domain>
--   email: email-name@domain
--   name: name
--   domain: domain
+-   <code>git-whoami.statusbar.display: "full" | "email" | "name" | "domain" </code>
