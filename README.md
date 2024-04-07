@@ -4,6 +4,12 @@ Git whoami vscode extension give the possibility to display in the status bar th
 
 Underline are used git user.name and git user.email properties
 
+## Marketplace - Visual studio
+<a href="https://marketplace.visualstudio.com/items?itemName=AlbertoIelpo.git-whoami"> Git whoami </a>
+
+Launch VS Code Quick Open (Ctrl+P), paste the following command, and press enter
+<code>ext install AlbertoIelpo.git-whoami</code>
+
 ## Features
 
 -   display current author name <author email> in the status bar
