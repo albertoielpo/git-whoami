@@ -2,7 +2,7 @@
 
 Git whoami vscode extension give the possibility to display in the status bar the author which be used for a commit.
 
-Underline are used git user.name and git user.email properties
+Under the hood are used git user.name and git user.email properties
 
 ## Marketplace - Visual studio
 <a href="https://marketplace.visualstudio.com/items?itemName=AlbertoIelpo.git-whoami"> Git whoami </a>
