@@ -8,7 +8,9 @@ import {
 } from "../const";
 import GitHelper, { CommitAuthor } from "../helper/git.helper";
 import FormatUtils from "../utils/format.utils";
-import GlobalState from "./global-state.context";
+import GlobalState, {
+    GlobalStateAuthorDetailsType
+} from "./global-state.context";
 
 export type StatusBarDisplay = "full" | "email" | "name" | "domain";
 
@@ -51,11 +53,55 @@ export default class AuthorStatusBar {
         this.statusBar.tooltip = FormatUtils.statusBar(data, "full");
     }
 
+    private async addNew(globalState: GlobalState) {
+        const name = await window.showInputBox({
+            prompt: LABEL_INSERT_NAME
+        });
+        const email = await window.showInputBox({
+            prompt: LABEL_INSERT_EMAIL
+        });
+
+        const signing = await window.showInputBox({
+            prompt: "Would you like to configure a signing key? y(es)/n(o)/r(eset)"
+        });
+
+        let privateKeyPath: string | undefined;
+
+        if (
+            signing?.toLowerCase() === "y" ||
+            signing?.toLowerCase() === "yes"
+        ) {
+            // Show the native open‐file dialog
+            const priKey = await window.showOpenDialog({
+                canSelectMany: false,
+                openLabel: "Select private key",
+                filters: { "All files": ["*"] }
+            });
+
+            if (Array.isArray(priKey) && priKey.length > 0) {
+                privateKeyPath = priKey[0].path;
+            }
+        } else if (
+            signing?.toLowerCase() === "r" ||
+            signing?.toLowerCase() === "reset"
+        ) {
+            privateKeyPath = "";
+        }
+
+        if (!name || !email) {
+            return;
+        }
+        const author: CommitAuthor = { name, email, privateKeyPath };
+        this.update(author);
+        await this.gitHelper.save(author);
+        await this.updateAuthorDetails(author, globalState);
+    }
+
     async onClick(globalState: GlobalState) {
         const savedAuthorDetails = await globalState.getAuthorDetails();
         const options = [LABEL_ADD_NEW];
         for (const entry of Object.entries(savedAuthorDetails ?? {})) {
-            options.push(`${entry[1]} <${entry[0]}>`);
+            options.push(`${entry[1].name} <${entry[0]}>`); // fullname <email>
         }
 
         const result = await window.showQuickPick(options, {
@@ -67,25 +113,18 @@ export default class AuthorStatusBar {
         }
 
         if (result === LABEL_ADD_NEW) {
-            const name = await window.showInputBox({
-                prompt: LABEL_INSERT_NAME
-            });
-            const email = await window.showInputBox({
-                prompt: LABEL_INSERT_EMAIL
-            });
-
-            if (!name || !email) {
-                return;
-            }
-            const author = { name, email };
-            this.update(author);
-            await this.gitHelper.save(author);
-            await this.updateAuthorDetails(author, globalState);
+            // add new user data
+            await this.addNew(globalState);
             return;
         }
 
         const author = FormatUtils.decode(result);
-        this.update(author);
+        if (!author?.email) {
+            return;
+        }
+
+        const cur = await globalState.getAuthorByEmail(author.email);
+        this.update(cur[author.email]);
         await this.gitHelper.save(author);
         await this.updateAuthorDetails(author, globalState);
     }
@@ -104,8 +143,12 @@ export default class AuthorStatusBar {
             return;
         }
 
-        const tmp: Record<string, string> = {};
-        tmp[author.email] = author.name;
+        const tmp: GlobalStateAuthorDetailsType = {};
+        tmp[author.email] = {
+            name: author.name,
+            privateKeyPath: author.privateKeyPath,
+            email: author.email
+        } as GlobalStateAuthorDetailsType;
         await globalState.updateAuthorDetails(tmp);
     }
 }

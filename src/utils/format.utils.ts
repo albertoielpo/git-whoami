@@ -2,7 +2,7 @@ import { StatusBarDisplay } from "../context/author-status-bar.context";
 import { CommitAuthor } from "../helper/git.helper";
 
 export default class FormatUtils {
-    public static decode(data: string): CommitAuthor {
+    public static decode(data: string): Pick<CommitAuthor, "name" | "email"> {
         try {
             const parts = data.split("<");
             return {
