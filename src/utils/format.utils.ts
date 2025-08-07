@@ -17,7 +17,10 @@ export default class FormatUtils {
         }
     }
 
-    public static statusBar(data: CommitAuthor, display: StatusBarDisplay) {
+    public static encode(
+        data: CommitAuthor,
+        display: StatusBarDisplay
+    ): string {
         switch (display) {
             case "name":
                 return data.name ?? "N/A";

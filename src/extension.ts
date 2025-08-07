@@ -6,7 +6,7 @@ import GlobalState from "./context/global-state.context";
 import GitHelper from "./helper/git.helper";
 
 /**
- *
+ * On load
  * @param context
  * @param authorStatusBar
  */
@@ -25,6 +25,10 @@ async function onExtensionLoad(
     }
 }
 
+/**
+ * It checks if the project is a git project using file system api
+ * @returns
+ */
 async function isGitProject(): Promise<string | undefined> {
     try {
         if (workspace.workspaceFolders?.length) {

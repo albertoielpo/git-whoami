@@ -1,10 +1,13 @@
-import { StatusBarAlignment, StatusBarItem, window } from "vscode";
+import { homedir } from "os";
+import { StatusBarAlignment, StatusBarItem, Uri, window } from "vscode";
 import {
     COMMAND_CHANGE_AUTHOR,
     LABEL_ADD_NEW,
+    LABEL_CONFIGURE_SIGNING_KEY,
     LABEL_GIT_COMMIT_AUTHORS,
     LABEL_INSERT_EMAIL,
-    LABEL_INSERT_NAME
+    LABEL_INSERT_NAME,
+    LABEL_SELECT_PK
 } from "../const";
 import GitHelper, { CommitAuthor } from "../helper/git.helper";
 import FormatUtils from "../utils/format.utils";
@@ -25,34 +28,47 @@ export default class AuthorStatusBar {
         this.gitHelper = gitUtils;
     }
 
+    /**
+     * Get status bar item
+     * @returns
+     */
     get(): StatusBarItem {
         return this.statusBar;
     }
 
+    /**
+     * Set and show status bar item
+     * @param data
+     * @returns
+     */
     set(data: CommitAuthor) {
         if (!data || !data.email || !data.name) {
             return;
         }
-        this.statusBar.text = FormatUtils.statusBar(
-            data,
-            this.statusBarDisplay
-        );
-        this.statusBar.tooltip = FormatUtils.statusBar(data, "full");
+        this.statusBar.text = FormatUtils.encode(data, this.statusBarDisplay);
+        this.statusBar.tooltip = FormatUtils.encode(data, "full");
         this.statusBar.command = COMMAND_CHANGE_AUTHOR; // on click on tooltip change author
         this.statusBar.show();
     }
 
+    /**
+     * Update status bar item
+     * @param data
+     * @returns
+     */
     update(data: CommitAuthor) {
         if (!data || !data.email || !data.name) {
             return;
         }
-        this.statusBar.text = FormatUtils.statusBar(
-            data,
-            this.statusBarDisplay
-        );
-        this.statusBar.tooltip = FormatUtils.statusBar(data, "full");
+        this.statusBar.text = FormatUtils.encode(data, this.statusBarDisplay);
+        this.statusBar.tooltip = FormatUtils.encode(data, "full");
     }
 
+    /**
+     * Add new git user
+     * @param globalState
+     * @returns
+     */
     private async addNew(globalState: GlobalState) {
         const name = await window.showInputBox({
             prompt: LABEL_INSERT_NAME
@@ -62,7 +78,7 @@ export default class AuthorStatusBar {
         });
 
         const signing = await window.showInputBox({
-            prompt: "Would you like to configure a signing key? y(es)/n(o)/r(eset)"
+            prompt: LABEL_CONFIGURE_SIGNING_KEY
         });
 
         let privateKeyPath: string | undefined;
@@ -71,21 +87,18 @@ export default class AuthorStatusBar {
             signing?.toLowerCase() === "y" ||
             signing?.toLowerCase() === "yes"
         ) {
+            const defaultUri = Uri.file(homedir()); // e.g. '/home/alberto' or 'C:\\Users\\alberto'
             // Show the native open‐file dialog
             const priKey = await window.showOpenDialog({
                 canSelectMany: false,
-                openLabel: "Select private key",
-                filters: { "All files": ["*"] }
+                openLabel: LABEL_SELECT_PK,
+                filters: { LABEL_ALL_FILES: ["*"] },
+                defaultUri
             });
 
             if (Array.isArray(priKey) && priKey.length > 0) {
                 privateKeyPath = priKey[0].path;
             }
-        } else if (
-            signing?.toLowerCase() === "r" ||
-            signing?.toLowerCase() === "reset"
-        ) {
-            privateKeyPath = "";
         }
 
         if (!name || !email) {
@@ -97,6 +110,11 @@ export default class AuthorStatusBar {
         await this.updateAuthorDetails(author, globalState);
     }
 
+    /**
+     * Status bar item onClick action
+     * @param globalState
+     * @returns
+     */
     async onClick(globalState: GlobalState) {
         const savedAuthorDetails = await globalState.getAuthorDetails();
         const options = [LABEL_ADD_NEW];
@@ -118,23 +136,34 @@ export default class AuthorStatusBar {
             return;
         }
 
-        const author = FormatUtils.decode(result);
+        let author = FormatUtils.decode(result);
         if (!author?.email) {
             return;
         }
 
         const cur = await globalState.getAuthorByEmail(author.email);
-        this.update(cur[author.email]);
+        author = cur[author.email]; // author contains all data
+        this.update(author);
         await this.gitHelper.save(author);
         await this.updateAuthorDetails(author, globalState);
     }
 
+    /**
+     * Clean all authors
+     * @param globalState
+     */
     async cleanAuthors(globalState: GlobalState) {
         await globalState.resetAuthorDetails();
         const author = await this.gitHelper.getCurrentAuthor();
         await this.updateAuthorDetails(author, globalState);
     }
 
+    /**
+     * Update author details
+     * @param author
+     * @param globalState
+     * @returns
+     */
     private async updateAuthorDetails(
         author: CommitAuthor,
         globalState: GlobalState
@@ -144,11 +173,12 @@ export default class AuthorStatusBar {
         }
 
         const tmp: GlobalStateAuthorDetailsType = {};
-        tmp[author.email] = {
+        const ca: CommitAuthor = {
             name: author.name,
             privateKeyPath: author.privateKeyPath,
             email: author.email
-        } as GlobalStateAuthorDetailsType;
+        };
+        tmp[author.email] = ca;
         await globalState.updateAuthorDetails(tmp);
     }
 }

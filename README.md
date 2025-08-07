@@ -5,6 +5,7 @@ Git whoami vscode extension give the possibility to display in the status bar th
 Under the hood are used git user.name and git user.email properties
 
 ## Marketplace - Visual studio
+
 <a href="https://marketplace.visualstudio.com/items?itemName=AlbertoIelpo.git-whoami"> Git whoami </a>
 
 Launch VS Code Quick Open (Ctrl+P), paste the following command, and press enter
@@ -16,6 +17,7 @@ Launch VS Code Quick Open (Ctrl+P), paste the following command, and press enter
 -   change author name and patch at local level (.git/config)
 -   insert new author name
 -   personalize info to display via property (only name, only email, both)
+-   add support for ssh signing key
 
 ## How to use
 
@@ -35,3 +37,11 @@ Git Whoami status bar display can be:
 ### Example
 
 -   <code>git-whoami.statusbar.display: "full" | "email" | "name" | "domain" </code>
+
+## Publish into marketplace
+
+Complete requirement guide
+
+-   https://code.visualstudio.com/api/working-with-extensions/publishing-extension
+
+then <code> npm run publish </code>

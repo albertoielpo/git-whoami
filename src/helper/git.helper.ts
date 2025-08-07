@@ -8,7 +8,7 @@ import { GlobalStateAuthorDetailsType } from "../context/global-state.context";
 
 export type CommitAuthor = {
     name?: string;
-    email?: string;
+    email: string;
     privateKeyPath?: string;
 };
 
@@ -48,6 +48,7 @@ export default class GitHelper {
             if (name && email) {
                 commitAuthors[email] = {
                     name,
+                    email,
                     privateKeyPath
                 } as CommitAuthor;
             }
@@ -56,7 +57,7 @@ export default class GitHelper {
     }
 
     /**
-     * Unset git configuration
+     * Unset git configuration using raw api
      * @param key
      * @param scope
      * @param value
@@ -109,7 +110,7 @@ export default class GitHelper {
             );
             await this.sg.addConfig("gpg.format", "ssh", false, curScope);
             await this.sg.addConfig("commit.gpgsign", "true", false, curScope);
-        } else if (data.privateKeyPath === "") {
+        } else {
             // unset private key params
             await this.unsetConfig("user.signingkey", curScope);
             await this.unsetConfig("gpg.format", curScope, "ssh");
