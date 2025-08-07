@@ -141,11 +141,13 @@ export default class AuthorStatusBar {
             return;
         }
 
-        const cur = await globalState.getAuthorByEmail(author.email);
-        author = cur[author.email]; // here author contains all data
-        this.update(author);
-        await this.gitHelper.save(author);
-        await this.updateAuthorDetails(author, globalState);
+        const gsAuthor = await globalState.getAuthorByEmail(author.email);
+        if (!gsAuthor) {
+            return;
+        }
+        this.update(gsAuthor);
+        await this.gitHelper.save(gsAuthor);
+        await this.updateAuthorDetails(gsAuthor, globalState);
     }
 
     /**
@@ -156,7 +158,10 @@ export default class AuthorStatusBar {
         await globalState.resetAuthorDetails();
         const gitAuthor = await this.gitHelper.getCurrentAuthor();
         const gsAuthor = await globalState.getAuthorByEmail(gitAuthor.email); // here author contains all data
-        await this.updateAuthorDetails(gsAuthor[gitAuthor.email], globalState);
+        if (!gsAuthor) {
+            return;
+        }
+        await this.updateAuthorDetails(gsAuthor, globalState);
     }
 
     /**
@@ -201,12 +206,7 @@ export default class AuthorStatusBar {
         }
 
         const tmp: GlobalStateAuthorDetailsType = {};
-        const ca: CommitAuthor = {
-            name: author.name,
-            privateKeyPath: author.privateKeyPath,
-            email: author.email
-        };
-        tmp[author.email] = ca;
+        tmp[author.email] = author;
         await globalState.updateAuthorDetails(tmp);
     }
 }

@@ -14,26 +14,22 @@ export default class GlobalState {
      * @param email
      * @returns
      */
-    async getAuthorByEmail(
-        email: string
-    ): Promise<GlobalStateAuthorDetailsType> {
+    async getAuthorByEmail(email: string): Promise<CommitAuthor | null> {
         const gs: GlobalStateAuthorDetailsSerialized | undefined =
             await this.context.globalState.get(GLOBAL_STATE_AUTHOR_DETAILS);
         const res = this.gsDeserialize(gs);
         for (const entry of Object.entries(res)) {
             if (entry[0] === email) {
-                const tmp: GlobalStateAuthorDetailsType = {};
                 if (typeof entry[1] === "string") {
                     // backward compatibily with 1.0.x
-                    tmp[entry[0]] = { name: entry[1], email: entry[0] };
+                    return { name: entry[1], email: entry[0] };
                 } else {
-                    tmp[entry[0]] = entry[1];
+                    return entry[1];
                 }
-                return tmp;
             }
         }
 
-        return res;
+        return null;
     }
 
     /**
@@ -55,9 +51,18 @@ export default class GlobalState {
         data: GlobalStateAuthorDetailsType
     ): Promise<unknown> {
         const savedConfig = await this.getAuthorDetails();
+        const merge: GlobalStateAuthorDetailsType = {};
+
+        for (const key in savedConfig) {
+            merge[key] = { ...savedConfig[key] };
+        }
+
+        for (const key in data) {
+            merge[key] = { ...(merge[key] || {}), ...data[key] };
+        }
+
         return this.context.globalState.update(GLOBAL_STATE_AUTHOR_DETAILS, {
-            ...this.gsSerialize(savedConfig),
-            ...this.gsSerialize(data)
+            ...this.gsSerialize(merge)
         });
     }
 

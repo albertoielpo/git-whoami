@@ -27,7 +27,13 @@ export default class GitHelper {
         const current = listConfig.all;
         const name = (current["user.name"] as string) ?? "N/A";
         const email = (current["user.email"] as string) ?? "N/A";
-        return { name, email };
+        const sk = current["user.signingkey"] as string;
+        const res: CommitAuthor = { name, email };
+        if (sk) {
+            res.privateKeyPath = sk;
+        }
+
+        return res;
     }
 
     /**

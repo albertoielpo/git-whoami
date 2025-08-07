@@ -23,6 +23,16 @@ async function onExtensionLoad(
         const author = await gitHelper.getCurrentAuthor();
         const currentConfig = await gitHelper.getAllAvailableAuthors();
         await globalState.updateAuthorDetails(currentConfig);
+
+        const gsAuthor = await globalState.getAuthorByEmail(author.email);
+        if (gsAuthor) {
+            // if data in git are different from the extension
+            if (gsAuthor.privateKeyPath && !author.privateKeyPath) {
+                // then save
+                await gitHelper.save({ ...gsAuthor });
+            }
+        }
+
         authorStatusBar.set(author);
     } catch (error) {
         console.error(error);
