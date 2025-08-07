@@ -1,6 +1,10 @@
 import { lstat } from "node:fs/promises";
 import { ExtensionContext, commands, workspace } from "vscode";
-import { COMMAND_CHANGE_AUTHOR, COMMAND_CLEAN_AUTHORS } from "./const";
+import {
+    COMMAND_CHANGE_AUTHOR,
+    COMMAND_CLEAN_AUTHORS,
+    COMMAND_DELETE_AUTHOR
+} from "./const";
 import AuthorStatusBar from "./context/author-status-bar.context";
 import GlobalState from "./context/global-state.context";
 import GitHelper from "./helper/git.helper";
@@ -78,6 +82,11 @@ export async function activate(context: ExtensionContext) {
         authorStatusBar.cleanAuthors(globalState)
     );
     context.subscriptions.push(cleanAuthors);
+
+    const deleteAuthor = commands.registerCommand(COMMAND_DELETE_AUTHOR, () =>
+        authorStatusBar.deleteAuthor(globalState)
+    );
+    context.subscriptions.push(deleteAuthor);
 
     onExtensionLoad(authorStatusBar, globalState, gitHelper);
 }

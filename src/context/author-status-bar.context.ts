@@ -4,6 +4,7 @@ import {
     COMMAND_CHANGE_AUTHOR,
     LABEL_ADD_NEW,
     LABEL_CONFIGURE_SIGNING_KEY,
+    LABEL_DELETE_AUTHOR,
     LABEL_GIT_COMMIT_AUTHORS,
     LABEL_INSERT_EMAIL,
     LABEL_INSERT_NAME,
@@ -124,7 +125,6 @@ export default class AuthorStatusBar {
 
         const result = await window.showQuickPick(options, {
             placeHolder: LABEL_GIT_COMMIT_AUTHORS
-            // onDidSelectItem: (item) => {}
         });
         if (!result) {
             return;
@@ -142,7 +142,7 @@ export default class AuthorStatusBar {
         }
 
         const cur = await globalState.getAuthorByEmail(author.email);
-        author = cur[author.email]; // author contains all data
+        author = cur[author.email]; // here author contains all data
         this.update(author);
         await this.gitHelper.save(author);
         await this.updateAuthorDetails(author, globalState);
@@ -152,10 +152,38 @@ export default class AuthorStatusBar {
      * Clean all authors
      * @param globalState
      */
-    async cleanAuthors(globalState: GlobalState) {
+    async cleanAuthors(globalState: GlobalState): Promise<void> {
         await globalState.resetAuthorDetails();
-        const author = await this.gitHelper.getCurrentAuthor();
-        await this.updateAuthorDetails(author, globalState);
+        const gitAuthor = await this.gitHelper.getCurrentAuthor();
+        const gsAuthor = await globalState.getAuthorByEmail(gitAuthor.email); // here author contains all data
+        await this.updateAuthorDetails(gsAuthor[gitAuthor.email], globalState);
+    }
+
+    /**
+     * Delete the selected author. It's not possible to delete the current one
+     * @param globalState
+     */
+    async deleteAuthor(globalState: GlobalState): Promise<void> {
+        const gitAuthor = await this.gitHelper.getCurrentAuthor();
+        const savedAuthorDetails = await globalState.getAuthorDetails();
+        const options = [];
+        for (const entry of Object.entries(savedAuthorDetails ?? {})) {
+            if (entry[0] === gitAuthor.email) {
+                // skip the current one
+                continue;
+            }
+            options.push(`${entry[1].name} <${entry[0]}>`); // fullname <email>
+        }
+
+        const result = await window.showQuickPick(options, {
+            placeHolder: LABEL_DELETE_AUTHOR
+        });
+        if (!result) {
+            return;
+        }
+
+        const selected = FormatUtils.decode(result);
+        await globalState.deleteAuthorDetails(selected.email);
     }
 
     /**

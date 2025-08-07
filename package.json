@@ -8,7 +8,7 @@
         "name": "Alberto Ielpo",
         "url": "https://ielpo.net"
     },
-    "version": "1.1.1",
+    "version": "1.2.0",
     "engines": {
         "vscode": "^1.87.0"
     },
@@ -33,6 +33,10 @@
             {
                 "command": "git-whoami.clean-authors",
                 "title": "Git Whoami: Clean authors except current"
+            },
+            {
+                "command": "git-whoami.delete-author",
+                "title": "Git Whoami: Delete author"
             }
         ],
         "configuration": {

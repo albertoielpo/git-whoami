@@ -24,6 +24,7 @@ Launch VS Code Quick Open (Ctrl+P), paste the following command, and press enter
 -   Click on the status bar on the author name and select/add the author name
 -   CTRL+MAIUSC+P + "Git Whoami: change author" and select/add the author name
 -   CTRL+MAIUSC+P + "Git Whoami: clean authors except current" to delete cache layer
+-   CTRL+MAIUSC+P + "Git Whoami: delete author" and select/add the author name
 
 ## Configuration
 

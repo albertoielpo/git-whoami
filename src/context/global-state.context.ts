@@ -69,6 +69,14 @@ export default class GlobalState {
         return this.context.globalState.update(GLOBAL_STATE_AUTHOR_DETAILS, {});
     }
 
+    async deleteAuthorDetails(email: string): Promise<unknown> {
+        const authors = await this.getAuthorDetails();
+        delete authors[email];
+        return this.context.globalState.update(GLOBAL_STATE_AUTHOR_DETAILS, {
+            ...this.gsSerialize(authors)
+        });
+    }
+
     /**
      * Deserialize global state context
      * @param gs
