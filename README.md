@@ -44,4 +44,11 @@ Complete requirement guide
 
 -   https://code.visualstudio.com/api/working-with-extensions/publishing-extension
 
-then <code> npm run publish </code>
+then
+
+```bash
+npm run compile
+vsce package
+# make sure that you have perform the login "vsce login <id>"
+vsce publish --pat <token>
+```
