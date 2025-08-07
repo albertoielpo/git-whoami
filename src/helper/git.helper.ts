@@ -48,9 +48,11 @@ export default class GitHelper {
             if (name && email) {
                 commitAuthors[email] = {
                     name,
-                    email,
-                    privateKeyPath
+                    email
                 } as CommitAuthor;
+                if (privateKeyPath) {
+                    commitAuthors[email].privateKeyPath = privateKeyPath;
+                }
             }
         }
         return commitAuthors;
