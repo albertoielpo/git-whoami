@@ -10,9 +10,10 @@ import GlobalState from "./context/global-state.context";
 import GitHelper from "./helper/git.helper";
 
 /**
- * On load
- * @param context
- * @param authorStatusBar
+ * Called when the extension loads
+ * @param authorStatusBar - The status bar instance for displaying author information
+ * @param globalState - The global state manager for storing author details
+ * @param gitHelper - The Git helper instance for Git operations
  */
 async function onExtensionLoad(
     authorStatusBar: AuthorStatusBar,
@@ -26,9 +27,9 @@ async function onExtensionLoad(
 
         const gsAuthor = await globalState.getAuthorByEmail(author.email);
         if (gsAuthor) {
-            // if data in git are different from the extension
+            // If Git data differs from the extension's stored data
             if (gsAuthor.privateKeyPath && !author.privateKeyPath) {
-                // then save
+                // Save the stored data to Git
                 await gitHelper.save({ ...gsAuthor });
             }
         }
@@ -40,8 +41,8 @@ async function onExtensionLoad(
 }
 
 /**
- * It checks if the project is a git project using file system api
- * @returns
+ * Checks if the current workspace is a Git project using the file system API
+ * @returns The workspace path if it is a Git project, undefined otherwise
  */
 async function isGitProject(): Promise<string | undefined> {
     try {
@@ -59,8 +60,8 @@ async function isGitProject(): Promise<string | undefined> {
 }
 
 /**
- * On extension activation
- * @param context
+ * Called when the extension is activated
+ * @param context - The extension context provided by VS Code
  */
 export async function activate(context: ExtensionContext) {
     const workspacePath = await isGitProject();
@@ -80,12 +81,12 @@ export async function activate(context: ExtensionContext) {
     const authorStatusBar = new AuthorStatusBar(gitHelper, statusbarDisplay);
     const globalState = new GlobalState(context);
 
-    // register command "change author"
+    // Register the "change author" command
     const changeAuthor = commands.registerCommand(COMMAND_CHANGE_AUTHOR, () =>
         authorStatusBar.onClick(globalState)
     );
 
-    // register command "set default author"
+    // Add command to subscriptions for proper cleanup
     context.subscriptions.push(changeAuthor);
 
     const cleanAuthors = commands.registerCommand(COMMAND_CLEAN_AUTHORS, () =>

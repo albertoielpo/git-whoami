@@ -30,17 +30,16 @@ export default class AuthorStatusBar {
     }
 
     /**
-     * Get status bar item
-     * @returns
+     * Retrieves the status bar item instance
+     * @returns The status bar item
      */
     get(): StatusBarItem {
         return this.statusBar;
     }
 
     /**
-     * Set and show status bar item
-     * @param data
-     * @returns
+     * Sets the status bar content and displays it
+     * @param data - The commit author data to display
      */
     set(data: CommitAuthor) {
         if (!data || !data.email || !data.name) {
@@ -48,14 +47,13 @@ export default class AuthorStatusBar {
         }
         this.statusBar.text = FormatUtils.encode(data, this.statusBarDisplay);
         this.statusBar.tooltip = FormatUtils.encode(data, "full");
-        this.statusBar.command = COMMAND_CHANGE_AUTHOR; // on click on tooltip change author
+        this.statusBar.command = COMMAND_CHANGE_AUTHOR; // Command to execute when clicking the status bar
         this.statusBar.show();
     }
 
     /**
-     * Update status bar item
-     * @param data
-     * @returns
+     * Updates the status bar content without showing it
+     * @param data - The commit author data to display
      */
     update(data: CommitAuthor) {
         if (!data || !data.email || !data.name) {
@@ -66,9 +64,8 @@ export default class AuthorStatusBar {
     }
 
     /**
-     * Add new git user
-     * @param globalState
-     * @returns
+     * Prompts the user to add a new Git author
+     * @param globalState - The global state manager for storing author details
      */
     private async addNew(globalState: GlobalState) {
         const name = await window.showInputBox({
@@ -88,8 +85,8 @@ export default class AuthorStatusBar {
             signing?.toLowerCase() === "y" ||
             signing?.toLowerCase() === "yes"
         ) {
-            const defaultUri = Uri.file(homedir()); // e.g. '/home/alberto' or 'C:\\Users\\alberto'
-            // Show the native open‐file dialog
+            const defaultUri = Uri.file(homedir()); // e.g. '/home/alberto' or 'C:\Users\alberto'
+            // Show the native file picker dialog
             const priKey = await window.showOpenDialog({
                 canSelectMany: false,
                 openLabel: LABEL_SELECT_PK,
@@ -112,15 +109,14 @@ export default class AuthorStatusBar {
     }
 
     /**
-     * Status bar item onClick action
-     * @param globalState
-     * @returns
+     * Handles the click event on the status bar item
+     * @param globalState - The global state manager for retrieving author details
      */
     async onClick(globalState: GlobalState) {
         const savedAuthorDetails = await globalState.getAuthorDetails();
         const options = [LABEL_ADD_NEW];
         for (const entry of Object.entries(savedAuthorDetails ?? {})) {
-            options.push(`${entry[1].name} <${entry[0]}>`); // fullname <email>
+            options.push(`${entry[1].name} <${entry[0]}>`); // Format: Full Name <email>
         }
 
         const result = await window.showQuickPick(options, {
@@ -131,7 +127,7 @@ export default class AuthorStatusBar {
         }
 
         if (result === LABEL_ADD_NEW) {
-            // add new user data
+            // Add a new author
             await this.addNew(globalState);
             return;
         }
@@ -151,13 +147,13 @@ export default class AuthorStatusBar {
     }
 
     /**
-     * Clean all authors
-     * @param globalState
+     * Clears all stored authors from the global state
+     * @param globalState - The global state manager for managing author details
      */
     async cleanAuthors(globalState: GlobalState): Promise<void> {
         await globalState.resetAuthorDetails();
         const gitAuthor = await this.gitHelper.getCurrentAuthor();
-        const gsAuthor = await globalState.getAuthorByEmail(gitAuthor.email); // here author contains all data
+        const gsAuthor = await globalState.getAuthorByEmail(gitAuthor.email); // Author contains all data including signing key
         if (!gsAuthor) {
             return;
         }
@@ -165,8 +161,8 @@ export default class AuthorStatusBar {
     }
 
     /**
-     * Delete the selected author. It's not possible to delete the current one
-     * @param globalState
+     * Prompts the user to delete a stored author (cannot delete the currently active author)
+     * @param globalState - The global state manager for managing author details
      */
     async deleteAuthor(globalState: GlobalState): Promise<void> {
         const gitAuthor = await this.gitHelper.getCurrentAuthor();
@@ -174,10 +170,10 @@ export default class AuthorStatusBar {
         const options = [];
         for (const entry of Object.entries(savedAuthorDetails ?? {})) {
             if (entry[0] === gitAuthor.email) {
-                // skip the current one
+                // Skip the currently active author
                 continue;
             }
-            options.push(`${entry[1].name} <${entry[0]}>`); // fullname <email>
+            options.push(`${entry[1].name} <${entry[0]}>`); // Format: Full Name <email>
         }
 
         const result = await window.showQuickPick(options, {
@@ -192,10 +188,9 @@ export default class AuthorStatusBar {
     }
 
     /**
-     * Update author details
-     * @param author
-     * @param globalState
-     * @returns
+     * Updates the author details in the global state
+     * @param author - The commit author to update
+     * @param globalState - The global state manager for storing author details
      */
     private async updateAuthorDetails(
         author: CommitAuthor,
