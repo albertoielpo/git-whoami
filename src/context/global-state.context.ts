@@ -1,6 +1,7 @@
 import { ExtensionContext } from "vscode";
 import { GLOBAL_STATE_AUTHOR_DETAILS } from "../const";
 import { CommitAuthor } from "../helper/git.helper";
+import FormatUtils from "../utils/format.utils";
 
 export default class GlobalState {
     private readonly context: ExtensionContext;
@@ -43,6 +44,16 @@ export default class GlobalState {
     }
 
     /**
+     * Normalize private key path avoiding ":" (windows)
+     * @param ca
+     */
+    normalizePk(ca: CommitAuthor): void {
+        if (ca.privateKeyPath) {
+            ca.privateKeyPath = FormatUtils.normalizePath(ca.privateKeyPath);
+        }
+    }
+
+    /**
      * Updates author details in the global state by merging with existing data
      * @param data - The author details to merge with existing data
      * @returns A promise that resolves when the update is complete
@@ -55,10 +66,12 @@ export default class GlobalState {
 
         for (const key in savedConfig) {
             merge[key] = { ...savedConfig[key] };
+            this.normalizePk(merge[key]);
         }
 
         for (const key in data) {
             merge[key] = { ...(merge[key] || {}), ...data[key] };
+            this.normalizePk(merge[key]);
         }
 
         return this.context.globalState.update(GLOBAL_STATE_AUTHOR_DETAILS, {

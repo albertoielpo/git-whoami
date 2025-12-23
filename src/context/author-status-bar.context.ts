@@ -95,7 +95,7 @@ export default class AuthorStatusBar {
             });
 
             if (Array.isArray(priKey) && priKey.length > 0) {
-                privateKeyPath = priKey[0].path;
+                privateKeyPath = FormatUtils.normalizePath(priKey[0].path);
             }
         }
 

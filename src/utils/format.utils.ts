@@ -33,4 +33,18 @@ export default class FormatUtils {
                 return `${data.name} <${data.email}>`;
         }
     }
+
+    public static normalizePath(path: string): string | undefined {
+        if (!path) {
+            return undefined;
+        }
+
+        // Mixed format: /c:/users -> /c/users
+        if (path.includes(":/")) {
+            return path.replaceAll(":/", "/");
+        }
+
+        // Native OS paths - do nothing
+        return path;
+    }
 }
