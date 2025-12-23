@@ -2,6 +2,10 @@
 
 All notable changes to the "git-whoami" extension will be documented in this file.
 
+## [1.2.2]
+
+-   Fix: normalize SSH private key paths to handle mixed Windows/Linux format (e.g., /c:/users -> /c/users)
+
 ## [1.2.1]
 
 -   Bugfix on ssh signing key
